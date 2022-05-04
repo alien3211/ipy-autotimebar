@@ -59,18 +59,16 @@ class LineWatcher:
         """Update Label time bar until cell end."""
         while self.finished == False:
             time.sleep(0.01)
-            current = monotonic()
-            self.timebar.value = f"time: {format_delta(current - self.start_time)}"
+            self.timebar.value = f"time: {format_delta(monotonic() - self.start_time)}"
+        delta = monotonic() - self.start_time
+        self.timebar.value = f'time: {format_delta(delta)} (started: {format_timestamp(self.timestamp)})'
 
     def stop(self):
         delta = monotonic() - self.start_time
         self.finished = True
-        time.sleep(0.01)
-        result = f'time: {format_delta(delta)} (started: {format_timestamp(self.timestamp)})'
-        if self.if_notebook:
-            self.timebar.value = result
-            return
-        print(result)
+        if not self.if_notebook:
+            result = f'time: {format_delta(delta)} (started: {format_timestamp(self.timestamp)})'
+            print(result)
 
 
 timer = LineWatcher()
@@ -85,6 +83,7 @@ def load_ipython_extension(ip):
 
 
 def unload_ipython_extension(ip):
+    stop()
     ip.events.unregister('pre_run_cell', start)
     ip.events.unregister('post_run_cell', stop)
 
